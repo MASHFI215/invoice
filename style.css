@@ -297,3 +297,22 @@ span[contenteditable]:focus, h4[contenteditable]:focus, h3[contenteditable]:focu
 address {
     margin-bottom: 20px;
 }
+
+/* CSS Styles */
+footer {
+    position: relative; /* Set the position of the footer to relative */
+}
+
+.receiver-signature {
+    margin-bottom: 40px; /* Add margin bottom to create space for the download button */
+}
+
+#downloadButton {
+    position: absolute; /* Set the position of the button to absolute */
+    bottom: -40px; /* Position the button 20px from the bottom of the footer */
+    right: 20px; /* Position the button 20px from the right of the footer */
+}
+.terms {
+    text-align: center;
+    margin-top: 20px;
+}

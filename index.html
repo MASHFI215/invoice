@@ -5,7 +5,33 @@
     <title>Invoice</title>
     <link rel="stylesheet" href="style.css">
     <link rel="license" href="https://www.opensource.org/licenses/mit-license/">
-    <script src="script.js"></script>
+  
+    <script>
+        // Function to handle download button click
+        function handleDownload() {
+            // Get the HTML content of the entire document
+            var htmlContent = document.documentElement.outerHTML;
+
+            // Create a Blob from the HTML content
+            var blob = new Blob([htmlContent], { type: 'text/html' });
+
+            // Create a link element
+            var link = document.createElement('a');
+
+            // Set the href attribute to the Blob URL
+            link.href = URL.createObjectURL(blob);
+
+            // Set the download attribute to specify the filename
+            link.download = 'invoice.html';
+
+            // Simulate a click on the link to trigger the download
+            link.click();
+        }
+
+        // Add click event listener to the download button
+        document.getElementById('downloadButton').addEventListener('click', handleDownload);
+    </script>
+</head>
 </head>
 <body>
     <header>
@@ -97,7 +123,20 @@
                 <h3 contenteditable>Receiver's Signature</h3>
                 <p contenteditable>Signature:</p> <!-- Editable signature field -->
             </div>
+          
         </div>
+        <button id="downloadButton">Download</button>
+       
     </footer>
+    
+    <!-- New section with terms and conditions -->
+    <section class="terms">
+        <h6>Terms and Conditions applicable</h6>
+        <p>Powered by <a href="https://www.amarprani.com/">amarprani.com</a></p>
+    </section>
+
+
+      <script src="script.js"></script>
+
 </body>
 </html>

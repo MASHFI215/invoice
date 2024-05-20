@@ -122,6 +122,8 @@ function updateInvoice() {
     }
 }
 
+
+
 // Initialize event listeners
 function onContentLoad() {
     updateInvoice();
@@ -174,3 +176,26 @@ function onContentLoad() {
 }
 
 window.addEventListener('DOMContentLoaded', onContentLoad);
+// Function to handle download button click
+function handleDownload() {
+    // Get the HTML content of the entire document
+    var htmlContent = document.documentElement.outerHTML;
+
+    // Create a Blob from the HTML content
+    var blob = new Blob([htmlContent], { type: 'text/html' });
+
+    // Create a link element
+    var link = document.createElement('a');
+
+    // Set the href attribute to the Blob URL
+    link.href = URL.createObjectURL(blob);
+
+    // Set the download attribute to specify the filename
+    link.download = 'invoice.html';
+
+    // Simulate a click on the link to trigger the download
+    link.click();
+}
+
+// Add click event listener to the download button
+document.getElementById('downloadButton').addEventListener('click', handleDownload);
