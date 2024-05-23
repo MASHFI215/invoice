@@ -1,201 +1,88 @@
-(function (document) {
-    var head = document.head || document.getElementsByTagName('head')[0] || document.documentElement,
-        elements = 'article aside audio bdi canvas data datalist details figcaption figure footer header hgroup mark meter nav output picture progress section summary time video x'.split(' '),
-        elementsLength = elements.length,
-        elementsIndex = 0,
-        element;
+document.addEventListener('DOMContentLoaded', () => {
+    const { jsPDF } = window.jspdf;
+    const today = new Date().toISOString().substring(0, 10);
+    document.getElementById('invoiceDate').value = today;
 
-    while (elementsIndex < elementsLength) {
-        element = document.createElement(elements[++elementsIndex]);
-    }
+    document.getElementById('downloadPdfButton').addEventListener('click', () => {
+        html2canvas(document.body).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save('invoice.pdf');
+        });
+    });
 
-    element.innerHTML = 'x<style>' +
-        'article,aside,details,figcaption,figure,footer,header,hgroup,nav,section{display:block}' +
-        'audio[controls],canvas,video{display:inline-block}' +
-        '[hidden],audio{display:none}' +
-        'mark{background:#FF0;color:#000}' +
-        '</style>';
-
-    return head.insertBefore(element.lastChild, head.firstChild);
-})(document);
-
-// Polyfill for matchesSelector and ancestorQuerySelector
-(function (window, ElementPrototype, ArrayPrototype, polyfill) {
-    function NodeList() { [polyfill] }
-    NodeList.prototype.length = ArrayPrototype.length;
-
-    ElementPrototype.matchesSelector = ElementPrototype.matchesSelector ||
-        ElementPrototype.mozMatchesSelector ||
-        ElementPrototype.msMatchesSelector ||
-        ElementPrototype.oMatchesSelector ||
-        ElementPrototype.webkitMatchesSelector ||
-        function matchesSelector(selector) {
-            return ArrayPrototype.indexOf.call(this.parentNode.querySelectorAll(selector), this) > -1;
-        };
-
-    ElementPrototype.ancestorQuerySelectorAll = ElementPrototype.ancestorQuerySelectorAll ||
-        ElementPrototype.mozAncestorQuerySelectorAll ||
-        ElementPrototype.msAncestorQuerySelectorAll ||
-        ElementPrototype.oAncestorQuerySelectorAll ||
-        ElementPrototype.webkitAncestorQuerySelectorAll ||
-        function ancestorQuerySelectorAll(selector) {
-            for (var cite = this, newNodeList = new NodeList; cite = this.parentElement;) {
-                if (cite.matchesSelector(selector)) ArrayPrototype.push.call(newNodeList, cite);
-            }
-
-            return newNodeList;
-        };
-
-    ElementPrototype.ancestorQuerySelector = ElementPrototype.ancestorQuerySelector ||
-        ElementPrototype.mozAncestorQuerySelector ||
-        ElementPrototype.msAncestorQuerySelector ||
-        ElementPrototype.oAncestorQuerySelector ||
-        ElementPrototype.webkitAncestorQuerySelector ||
-        function ancestorQuerySelector(selector) {
-            return this.ancestorQuerySelectorAll(selector)[0] || null;
-        };
-})(this, Element.prototype, Array.prototype);
-
-// Function to generate a new table row
-function generateTableRow() {
-    var emptyColumn = document.createElement('tr');
-
-    emptyColumn.innerHTML = '<td><a class="cut">-</a><span contenteditable></span></td>' +
-        '<td><span contenteditable></span></td>' +
-        '<td><span contenteditable>1</span></td>' +
-        '<td><span data-prefix>$</span><span contenteditable>0.00</span></td>';
-
-    return emptyColumn;
-}
-
-// Function to parse float from HTML content
-function parseFloatHTML(element) {
-    return parseFloat(element.innerHTML.replace(/[^\d\.\-]+/g, '')) || 0;
-}
-
-// Function to format a number as price
-function parsePrice(number) {
-    return number.toFixed(2).replace(/(\d)(?=(\d\d\d)+([^\d]|$))/g, '$1,');
-}
-
-// Function to update number values on user interaction
-function updateNumber(e) {
-    var activeElement = document.activeElement,
-        value = parseFloat(activeElement.innerHTML),
-        wasPrice = activeElement.innerHTML == parsePrice(parseFloatHTML(activeElement));
-
-    if (!isNaN(value) && (e.keyCode == 38 || e.keyCode == 40 || e.wheelDeltaY)) {
-        e.preventDefault();
-
-        value += e.keyCode == 38 ? 1 : e.keyCode == 40 ? -1 : Math.round(e.wheelDelta * 0.025);
-        value = Math.max(value, 0);
-
-        activeElement.innerHTML = wasPrice ? parsePrice(value) : value;
-    }
-
-    updateInvoice();
-}
-
-// Function to update invoice totals
-function updateInvoice() {
-    var total = 0;
-    var cells, price, a, i;
-
-    for (a = document.querySelectorAll('table.inventory tbody tr'), i = 0; a[i]; ++i) {
-        cells = a[i].querySelectorAll('span:last-child');
-        price = parseFloatHTML(cells[2]) * parseFloatHTML(cells[3]);
-        total += price;
-        cells[3].innerHTML = parsePrice(price);
-    }
-
-    cells = document.querySelectorAll('table.balance td:last-child span:last-child');
-    cells[0].innerHTML = total;
-    cells[2].innerHTML = parsePrice(total - parseFloatHTML(cells[1]));
-
-    var prefix = document.querySelector('#prefix');
-    if (prefix) {
-        for (a = document.querySelectorAll('[data-prefix] + span'), i = 0; a[i]; ++i) {
-            if (document.activeElement != a[i]) {
-                a[i].innerHTML = parsePrice(parseFloatHTML(a[i]));
-            }
-        }
-    }
-}
-
-
-
-// Initialize event listeners
-function onContentLoad() {
-    updateInvoice();
-
-    var input = document.querySelector('input');
-    var image = document.querySelector('img');
-    var imageContainer = document.querySelector('.logo-container');
-    var removeRowButtons = document.querySelectorAll('.cut');
-    var addRowButton = document.querySelector('.add');
-
-    if (input && image) {
-        input.addEventListener('focus', function () {
-            input.className = 'focus';
+    function updateInvoice() {
+        let grandTotal = 0;
+        document.querySelectorAll('table.inventory tbody tr').forEach(row => {
+            const quantity = parseInt(row.cells[2].querySelector('span').textContent.trim()) || 0;
+            const priceText = row.cells[3].querySelector('span[contenteditable]').textContent.trim();
+            const price = parseFloat(priceText.replace(/[^\d.-]/g, '')) || 0;
+            const total = quantity * price;
+            grandTotal += total;
         });
 
-        input.addEventListener('blur', function () {
-            input.className = '';
-        });
+        const totalCell = document.querySelector('table.balance tr:first-child td:last-child span');
+        totalCell.textContent = `$${grandTotal.toFixed(2)}`;
 
-        input.addEventListener('change', function () {
-            image.src = URL.createObjectURL(input.files[0]);
-            imageContainer.style.display = 'flex';
-        });
+        updateBalanceDue(grandTotal);
     }
 
-    if (removeRowButtons.length > 0) {
-        for (var i = 0; i < removeRowButtons.length; i++) {
-            removeRowButtons[i].addEventListener('click', function (event) {
-                var row = event.target.closest('tr');
-                row.parentNode.removeChild(row);
-                updateInvoice();
+    function updateBalanceDue(grandTotal) {
+        const amountPaidSpan = document.getElementById('amountPaid');
+        const amountPaid = parseFloat(amountPaidSpan.textContent.replace(/[^\d.-]/g, '')) || 0;
+        const balanceDue = grandTotal - amountPaid;
+        const balanceDueCell = document.querySelector('table.balance tr:nth-child(3) td:last-child span');
+        balanceDueCell.textContent = `$${balanceDue.toFixed(2)}`;
+    }
+
+    function addEventListenersToRow(row) {
+        row.querySelectorAll('span[contenteditable]').forEach(span => {
+            span.addEventListener('input', updateInvoice);
+        });
+
+        const removeButton = row.querySelector('a.cut');
+        if (removeButton) {
+            removeButton.addEventListener('click', () => {
+                row.remove();
+                updateInvoice(); // Update the invoice after removing a row
             });
         }
     }
 
-    if (addRowButton) {
-        addRowButton.addEventListener('click', function () {
-            document.querySelector('table.inventory tbody').appendChild(generateTableRow());
-            updateInvoice(); // Ensure the new row is accounted for in the invoice
-        });
+    function addNewRow() {
+        const tbody = document.querySelector('table.inventory tbody');
+        const newRow = generateTableRow();
+        tbody.appendChild(newRow);
+        addEventListenersToRow(newRow);
     }
 
-    var inventoryTable = document.querySelector('table.inventory tbody');
-    inventoryTable.addEventListener('input', updateInvoice);
+    document.querySelector('.add').addEventListener('click', addNewRow);
 
-    document.addEventListener('input', updateInvoice);
+    document.querySelectorAll('table.inventory tbody tr').forEach(row => {
+        addEventListenersToRow(row);
+    });
 
-    document.addEventListener('mousewheel', updateNumber);
-    document.addEventListener('keydown', updateNumber);
+    // Update balance due only when the amount paid is manually changed
+    const amountPaidSpan = document.getElementById('amountPaid');
+    amountPaidSpan.addEventListener('input', () => {
+        updateBalanceDue(parseFloat(document.querySelector('table.balance tr:first-child td:last-child span').textContent.replace(/[^\d.-]/g, '')));
+    });
+
+    // Initial call to updateInvoice to ensure any pre-existing data is calculated
+    updateInvoice();
+});
+
+function generateTableRow() {
+    const emptyColumn = document.createElement('tr');
+    emptyColumn.innerHTML = `
+        <td><a class="cut">-</a><span contenteditable></span></td>
+        <td><span contenteditable></span></td>
+        <td><span contenteditable>1</span></td>
+        <td><span data-prefix="$"></span><span contenteditable>0.00</span></td>
+    `;
+    return emptyColumn;
 }
-
-window.addEventListener('DOMContentLoaded', onContentLoad);
-// Function to handle download button click
-function handleDownload() {
-    // Get the HTML content of the entire document
-    var htmlContent = document.documentElement.outerHTML;
-
-    // Create a Blob from the HTML content
-    var blob = new Blob([htmlContent], { type: 'text/html' });
-
-    // Create a link element
-    var link = document.createElement('a');
-
-    // Set the href attribute to the Blob URL
-    link.href = URL.createObjectURL(blob);
-
-    // Set the download attribute to specify the filename
-    link.download = 'invoice.html';
-
-    // Simulate a click on the link to trigger the download
-    link.click();
-}
-
-// Add click event listener to the download button
-document.getElementById('downloadButton').addEventListener('click', handleDownload);

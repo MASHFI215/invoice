@@ -5,33 +5,8 @@
     <title>Invoice</title>
     <link rel="stylesheet" href="style.css">
     <link rel="license" href="https://www.opensource.org/licenses/mit-license/">
-  
-    <script>
-        // Function to handle download button click
-        function handleDownload() {
-            // Get the HTML content of the entire document
-            var htmlContent = document.documentElement.outerHTML;
-
-            // Create a Blob from the HTML content
-            var blob = new Blob([htmlContent], { type: 'text/html' });
-
-            // Create a link element
-            var link = document.createElement('a');
-
-            // Set the href attribute to the Blob URL
-            link.href = URL.createObjectURL(blob);
-
-            // Set the download attribute to specify the filename
-            link.download = 'invoice.html';
-
-            // Simulate a click on the link to trigger the download
-            link.click();
-        }
-
-        // Add click event listener to the download button
-        document.getElementById('downloadButton').addEventListener('click', handleDownload);
-    </script>
-</head>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
     <header>
@@ -42,7 +17,7 @@
             <p>01779-346525</p>
         </address>
         <span class="logo-container">
-            <img alt="" src="logo.png">
+            <img alt="Company Logo" src="logo.png">
             <p>Pet Transport BD</p>
             <input type="file" accept="image/*">
         </span>
@@ -71,12 +46,13 @@
                 <td><span contenteditable></span></td>
             </tr>
             <tr>
-                <th><span contenteditable>Date</span></th>
-                <td><span contenteditable>  /  / /</span></td>
+                <th><span>Date</span></th>
+                <td><input type="date" id="invoiceDate"></td>
             </tr>
+            
             <tr>
                 <th><span contenteditable>Amount Due</span></th>
-                <td><span id="prefix" contenteditable>$</span><span contenteditable></span></td>
+                <td><span id="prefix" contenteditable></span><span contenteditable></span></td>
             </tr>
         </table>
         <table class="inventory">
@@ -92,8 +68,8 @@
                 <tr>
                     <td><a class="cut">-</a><span contenteditable></span></td>
                     <td><span contenteditable></span></td>
-                    <td><span contenteditable></span></td>
-                    <td><span data-prefix>$</span><span contenteditable></span></td>
+                    <td><span contenteditable>1</span></td>
+                    <td><span data-prefix>$</span><span contenteditable>0.00</span></td>
                 </tr>
             </tbody>
         </table>
@@ -104,8 +80,13 @@
                 <td><span data-prefix>$</span><span contenteditable></span></td>
             </tr>
             <tr>
-                <th><span contenteditable>Amount Paid</span></th>
-                <td><span data-prefix>$</span><span contenteditable></span></td>
+                 
+
+                <th><span>Amount Paid</span></th>
+                <td><span data-prefix="$"></span><span id="amountPaid" contenteditable></span></td>
+                
+                    
+                
             </tr>
             <tr>
                 <th><span contenteditable>Balance Due</span></th>
@@ -117,26 +98,21 @@
         <div class="signature-section">
             <div class="sender-signature">
                 <h3 contenteditable>Pet Transport BD's Signature</h3>
-                <p contenteditable>Signature:</p> <!-- Editable signature field -->
+                <p contenteditable>Signature:</p>
             </div>
             <div class="receiver-signature">
                 <h3 contenteditable>Receiver's Signature</h3>
-                <p contenteditable>Signature:</p> <!-- Editable signature field -->
+                <p contenteditable>Signature:</p>
             </div>
-          
         </div>
-        <button id="downloadButton">Download</button>
-       
+        <button id="downloadPdfButton">Download PDF</button>
     </footer>
-    
-    <!-- New section with terms and conditions -->
     <section class="terms">
+    
+    
         <h6>Terms and Conditions applicable</h6>
         <p>Powered by <a href="https://www.amarprani.com/">amarprani.com</a></p>
     </section>
-
-
-      <script src="script.js"></script>
-
+    <script src="script.js"></script>
 </body>
 </html>

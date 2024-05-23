@@ -58,7 +58,7 @@ header address { float: left; font-size: 75%; font-style: normal; line-height: 1
 header address p { margin: 0 0 0.25em; }
 header span, header img { display: block; float: right; }
 header span { margin: 0 0 1em 1em; max-height: 25%; max-width: 60%; position: relative; }
-header img { max-height: 20%; max-width: 25%; }
+header img { max-height: 65%; max-width: 65%; }
 header input { cursor: pointer; -ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=0)"; height: 100%; left: 0; opacity: 0; position: absolute; top: 0; width: 100%; }
 
 /* article */
